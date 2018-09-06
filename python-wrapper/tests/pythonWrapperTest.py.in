@@ -1,0 +1,28 @@
+"""
+   This file is a part of channelflow version 2.0 https://channelflow.ch.
+   License is GNU GPL version 2 or later: ./LICENCE
+"""
+
+# Rudimentary test for the functionality of the python wrapper
+import sys
+sys.path.append("${CFWRAPPER_PYTHON_PATH}")
+import libpycf as cf
+
+# Create zero flow field and check that constructor works
+ff=cf.FlowField(10, 11, 12, 3, 2.0, 3.0, 4.0, 5.0)
+ff.makePhysical()
+
+assert(ff.Nx == 10)
+assert(ff.Ny == 11)
+assert(ff.Nz == 12)
+assert(ff.Nd == 3)
+assert(ff.Lx == 2.0)
+assert(ff.Lz == 3.0)
+assert(ff.a == 4.0)
+assert(ff.b == 5.0)
+assert(ff.Ly == ff.b-ff.a)
+
+ff[4,2,5,0] = 6.0
+assert(ff[4,2,5,0] == 6.0)
+
+exit(0)

@@ -1,0 +1,178 @@
+language: cpp
+
+# This should use container based workers on EC2
+sudo: false
+
+# Add ccache to try speed-up builds
+cache: ccache
+
+# Only build 'master' branch on push
+branches:
+  only:
+    - master
+
+jobs:
+  fast_finish: true
+  include:
+    - stage: 'Style and code guidelines'
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+            - clang-format-6.0
+      script: ./share/qa/style_test.sh
+
+    - stage: 'Unit and Integration Tests'
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - lcov
+            - ccache
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=gcc
+        - OMPI_CXX=g++
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/unit_and_integration_test.sh
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - ccache
+            - clang-6.0
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=clang-6.0
+        - OMPI_CXX=clang++-6.0
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/unit_and_integration_test.sh
+
+    - stage: 'Build Tests'
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - ccache
+            - g++-6
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=gcc-6
+        - OMPI_CXX=g++-6
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/build_test.sh
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - ccache
+            - g++-7
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=gcc-7
+        - OMPI_CXX=g++-7
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/build_test.sh
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - ccache
+            - g++-8
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=gcc-8
+        - OMPI_CXX=g++-8
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/build_test.sh
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:likemartinma/devel'
+          packages:
+            - ccache
+            - clang-6.0
+            - openmpi-bin
+            - libopenmpi-dev
+            - libhdf5-dev
+            - libnetcdf-dev
+            - libfftw3-dev
+            - libfftw3-mpi-dev
+            - libeigen3-dev
+      env:
+        - CMAKE_PREFIX_PATH=/usr/lib/x86_64-linux-gnu
+        - OMPI_CC=clang-6.0
+        - OMPI_CXX=clang++-6.0
+        - CPLUS_INCLUDE_PATH=/usr/lib/openmpi/include
+      script: ./share/qa/build_test.sh
+
+install:
+  - ccache -M 2G
+
+after_success:
+  - if [[ -f "${TRAVIS_BUILD_DIR}/cmake-build-release/Testing/Temporary/LastTest.log" ]] ; then ./share/qa/compute_coverage.sh ; fi
+
+after_failure:
+  - if [[ -f "${TRAVIS_BUILD_DIR}/cmake-build-release/Testing/Temporary/LastTest.log" ]] ; then cat "${TRAVIS_BUILD_DIR}/cmake-build-release/Testing/Temporary/LastTest.log" ; fi
