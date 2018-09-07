@@ -12,7 +12,7 @@ To obtain a copy of the code clone the current repository running
 
 To compile Channelflow:
 * CMake (version 3.1 or higher)
-* C++ supportive compiler
+* C++11 supportive compiler (GNU compiler version 6.0 or higher, clang compiler version 6.0 or higher)
 * FFTW (version 3 or higher)
 * Eigen3 (version 3 or higher)
 
