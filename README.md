@@ -91,7 +91,7 @@ For detailed information about functionalities and specific options refer to the
 
 
 ## Troubleshooting
-Discourse (Coming soon)
+For all questions and problems related to the compilation, installation and use of Channelflow 2.0, please make use of this Discourse user forum [discourse.channelflow.ch](https://discourse.channelflow.ch/). 
 
 ## Bugs Report
 The Bug report shall be carried out using the [Issues] feature of GitHub.
