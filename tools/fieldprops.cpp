@@ -400,9 +400,9 @@ int main(int argc, char* argv[]) {
             }
             cout << "------------Dynamics--------------------" << endl;
 
-	    vector<FlowField> fields = {u, FlowField(u.Nx(), u.Ny(), u.Nz(), 1, u.Lx(), u.Lz(), u.a(), u.b())};
-	    DNS dns(fields, flags);
-	    
+            vector<FlowField> fields = {u, FlowField(u.Nx(), u.Ny(), u.Nz(), 1, u.Lx(), u.Lz(), u.a(), u.b())};
+            DNS dns(fields, flags);
+
             const int N = iround(T / flags.dt + 1);
             cout << "computing du/dt: " << flush;
             dns.advance(fields, N);
