@@ -101,7 +101,7 @@ Real TurbStats::ustar() const {
     U.makeSpectral(trans);
     ChebyCoeff dUdy = diff(U);
     dUdy.makePhysical(trans);
-    return sqrt(nu_ / 2 * (abs(dUdy.eval_a() + abs(dUdy.eval_b()))));
+    return sqrt(nu_ / 2 * (abs(dUdy.eval_a()) + abs(dUdy.eval_b())));
 }
 
 Real TurbStats::bulkReynolds() const {
