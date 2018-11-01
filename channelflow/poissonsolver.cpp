@@ -378,42 +378,51 @@ void PressureSolver::solve(FlowField& p, FlowField u) {
     lint mxlocmax = u.mxlocmin() + u.Mxloc();
     lint mzlocmin = u.mzlocmin();
     lint mzlocmax = u.mzlocmin() + u.Mzloc();
+
+    Real H = b_ - a_;
+
     for (int mx = mxlocmin; mx < mxlocmax; ++mx)
         for (int mz = mzlocmin; mz < mzlocmax; ++mz) {
+
             // Don't modify the mx=mz=0 (kx=kz=0) solution, dirichlet BCs are fine
             if (mx != 0 || mz != 0) {
                 Real lambda = helmholtz_[mx - mxlocmin][mz - mzlocmin].lambda();
                 assert(lambda > 0);
-                Real gamma = sqrt(lambda);
 
                 for (int my = 0; my < My_; ++my) {
                     pk.set(my, p.cmplx(mx, my, mz, 0));
                     vk.set(my, u.cmplx(mx, my, mz, 1));
-                    // ukx.set(my, Dx*u.cmplx(mx,my,mz,0));
-                    // wkz.set(my, Dz*u.cmplx(mx,my,mz,2));
-                    // vkxx.set(my, Dx2*u.cmplx(mx,my,mz,1));
-                    // vkzz.set(my, Dz2*u.cmplx(mx,my,mz,1));
                 }
                 diff(pk, pky);
                 diff2(vk, vkyy);
 
-                // diff(ukx, ukxy);
-                // diff(wkz, wkyz);
-
                 Complex alpha = nu_ * vkyy.eval_a() - pky.eval_a();
-                Complex beta = nu_ * vkyy.eval_b() - pky.eval_b();
+                Complex beta  = nu_ * vkyy.eval_b() - pky.eval_b();
 
-                // Complex alpha = -nu_*(ukxy.eval_a() + wkyz.eval_a()) - pky.eval_a();
-                // Complex beta  = -nu_*(ukxy.eval_b() + wkyz.eval_b()) - pky.eval_b();
+                // 2018-10-31, following jfg notes. Solve boundary value problem
+                // g''(y) - mu^2 g(y) = 0, g'(a) = alpha, g'(b) = beta
+                // using the general solution 
+                // g(y) = c exp(mu(y-a)) + d exp(-mu(y-b))
+                // Determining constants c,d that match boundary conditions results
+                // in the formula below for c,d. Note that this particular formulation 
+                // of the general solution is well-behaved numerically: both parts have
+                // max 1 at one boundary and approach 0 at the other. The prior
+                // formulation of the general solution and constants in terms of
+                // (g(y) = c exp(mu y) + d exp(-mu y)) was subject to numerical
+                // overflow for large mu and a,b.
 
-                Real delta = gamma * (exp(gamma * (a_ - b_)) - exp(gamma * (b_ - a_)));
+                // Compute the coefficients c,d that produce g(y) that matches BCs
+                Real mu = sqrt(lambda); // solutions are more easily in terms of mu=sqrt(lambda)
 
-                Complex c = (alpha * exp(-gamma * b_) - beta * exp(-gamma * a_)) / delta;
-                Complex d = (alpha * exp(gamma * b_) - beta * exp(gamma * a_)) / delta;
+                Real delta = mu * (1 - exp(-2 * mu * H));
+                Complex c = (-alpha + beta  * exp(-mu * H)) / delta;
+                Complex d = (  beta - alpha * exp(-mu * H)) / delta;
 
+                // Evaluate g(y) at gridpoint values, transform to spectral, then add to p.
                 gk.setState(Physical);
                 for (int my = 0; my < My_; ++my)
-                    gk.set(my, c * exp(gamma * y[my]) + d * exp(-gamma * y[my]));
+                    gk.set(my, c * exp(-mu * (y[my] - a_)) + d * exp(mu * (y[my] - b_)));
+
                 gk.makeSpectral(trans_);
 
                 for (int my = 0; my < My_; ++my)
