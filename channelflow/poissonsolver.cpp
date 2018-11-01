@@ -402,7 +402,7 @@ void PressureSolver::solve(FlowField& p, FlowField u) {
                 // 2018-10-31, following jfg notes. Solve boundary value problem
                 // g''(y) - mu^2 g(y) = 0, g'(a) = alpha, g'(b) = beta
                 // using the general solution 
-                // g(y) = c exp(mu(y-a)) + d exp(-mu(y-b))
+                // g(y) = c exp(mu(y-a)) + d exp(-mu(y-b)) 
                 // Determining constants c,d that match boundary conditions results
                 // in the formula below for c,d. Note that this particular formulation 
                 // of the general solution is well-behaved numerically: both parts have
