@@ -383,7 +383,6 @@ void PressureSolver::solve(FlowField& p, FlowField u) {
 
     for (int mx = mxlocmin; mx < mxlocmax; ++mx)
         for (int mz = mzlocmin; mz < mzlocmax; ++mz) {
-
             // Don't modify the mx=mz=0 (kx=kz=0) solution, dirichlet BCs are fine
             if (mx != 0 || mz != 0) {
                 Real lambda = helmholtz_[mx - mxlocmin][mz - mzlocmin].lambda();
@@ -397,14 +396,14 @@ void PressureSolver::solve(FlowField& p, FlowField u) {
                 diff2(vk, vkyy);
 
                 Complex alpha = nu_ * vkyy.eval_a() - pky.eval_a();
-                Complex beta  = nu_ * vkyy.eval_b() - pky.eval_b();
+                Complex beta = nu_ * vkyy.eval_b() - pky.eval_b();
 
                 // 2018-10-31, following jfg notes. Solve boundary value problem
                 // g''(y) - mu^2 g(y) = 0, g'(a) = alpha, g'(b) = beta
-                // using the general solution 
-                // g(y) = c exp(mu(y-a)) + d exp(-mu(y-b)) 
+                // using the general solution
+                // g(y) = c exp(mu(y-a)) + d exp(-mu(y-b))
                 // Determining constants c,d that match boundary conditions results
-                // in the formula below for c,d. Note that this particular formulation 
+                // in the formula below for c,d. Note that this particular formulation
                 // of the general solution is well-behaved numerically: both parts have
                 // max 1 at one boundary and approach 0 at the other. The prior
                 // formulation of the general solution and constants in terms of
@@ -412,11 +411,11 @@ void PressureSolver::solve(FlowField& p, FlowField u) {
                 // overflow for large mu and a,b.
 
                 // Compute the coefficients c,d that produce g(y) that matches BCs
-                Real mu = sqrt(lambda); // solutions are more easily in terms of mu=sqrt(lambda)
+                Real mu = sqrt(lambda);  // solutions are more easily in terms of mu=sqrt(lambda)
 
                 Real delta = mu * (1 - exp(-2 * mu * H));
-                Complex c = (-alpha + beta  * exp(-mu * H)) / delta;
-                Complex d = (  beta - alpha * exp(-mu * H)) / delta;
+                Complex c = (-alpha + beta * exp(-mu * H)) / delta;
+                Complex d = (beta - alpha * exp(-mu * H)) / delta;
 
                 // Evaluate g(y) at gridpoint values, transform to spectral, then add to p.
                 gk.setState(Physical);
