@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
         Rxsearch = searchflags.xrelative;
         Rzsearch = searchflags.zrelative;
         Tsearch = searchflags.solntype == PeriodicOrbit ? true : false;
-        const bool Tnormalize = Tsearch ? false : true;
+        const bool Tnormalize = (Tsearch || searchflags.laurette) ? false : true;
 
         Real diagonal = 0.0;  // sqrt(Lx^2 + Lz^2)
         int W = 24;
