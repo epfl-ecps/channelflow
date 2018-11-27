@@ -809,39 +809,74 @@ Real viscosity(Real Reynolds, VelocityScale vscale, MeanConstraint constraint, R
     return nu;
 }
 
+// logic
+//
+// Vsuck == 0
+//   pressure constraint         =>   regular PCF/PPF formula, pressure style
+//   bulk velocity constraint    =>   regular PCF/PPF formula, bulk vel style
+// Vsuck != 0
+//   pressure constraint
+//     dPdx == 0                 =>   regular ASBL formula
+//     dPdx != 0                 =>   pressure ASBL formula
+//   bulk velocity constraint    =>   bulk velocity ASBL formula
+
 ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ubulk, Real Vsuck, Real a, Real b,
                           Real ua, Real ub, int Ny) {
     ChebyCoeff u(Ny, a, b, Spectral);
 
-    if (constraint == BulkVelocity) {
-        if (abs(Vsuck) > 1e-14)
-            cferror("Combining suction with constraint BulkVelocity is not implemented yet");
-
-        u[0] = 0.125 * (ub + ua) + 0.75 * Ubulk;
-        u[1] = 0.5 * (ub - ua);
-        u[2] = 0.375 * (ub + ua) - 0.75 * Ubulk;
-
-    } else {
-        if (abs(Vsuck) < 1e-14) {
+    if (Vsuck == 0.0) {
+        if (constraint == BulkVelocity) {
+            u[0] = 0.125 * (ub + ua) + 0.75 * Ubulk;
+            u[1] = 0.5 * (ub - ua);
+            u[2] = 0.375 * (ub + ua) - 0.75 * Ubulk;
+        } else {
             dPdx *= square((b - a) / 2);
             u[0] = 0.5 * (ub + ua) - 0.25 * dPdx / nu;
             u[1] = 0.5 * (ub - ua);
             u[2] = 0.25 * dPdx / nu;
         }
+    } else {  // Vsuck != 0
+        u.setState(Physical);
+        Vector y = chebypoints(Ny, a, b);
+        Real H = b - a;
+        Real ub_ua = ub - ua;
+        Real Vsuck_nu = Vsuck / nu;
+        Real expm1_H_Vsuck_nu = expm1(-H * Vsuck_nu);  // = exp(-H*Vsuck/nu) - 1
 
-        else {
-            u.setState(Physical);
-            if (dPdx != 0)
-                cferror("Combining suction with constraint PressureGradient is not implemented yet");
-            Real delta = nu / Vsuck;
-            Vector y = chebypoints(Ny, a, b);
-            Real c1 = (ub - ua) / (exp(-b / delta) - exp(-a / delta));
-            Real c2 = ua - c1 * exp(-a / delta);
-            for (int i = 0; i < Ny; i++) {
-                u[i] = c1 * exp(-y[i] / delta) + c2;
+        if (constraint == PressureGradient) {
+            Real dPdx_Vsuck = dPdx / Vsuck;
+
+            if (dPdx == 0.0) {
+                // Vsuck !=0, dPdx == 0, regular ASBL formula
+                for (int i = 0; i < Ny; i++) {
+                    u[i] = ua + ub_ua * expm1(-(y[i] - a) * Vsuck_nu) / expm1_H_Vsuck_nu;
+                }
+            } else {
+                // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
+                // This formula would evaluate to above dPdx == 0 formula in the case dPdx == 0,
+                // but I think it's clarifying to have both written out explicitly.
+                for (int i = 0; i < Ny; i++) {
+                    Real y_a = y[i] - a;
+                    u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
+                           dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+                }
             }
-            u.makeSpectral();
+        } else {
+            // Vsuck != 0, bulk velocity constraint, following jfg 2018-11-19 notes
+            Real k = -1.0 / expm1_H_Vsuck_nu - nu / (H * Vsuck);
+            if (abs(k - 0.5) < 1.0e-08)
+                cferror(
+                    "laminarProfile : we need an asymptotic formula for ASBL with bulk velocity\n"
+                    "constraint for the case 1/exp(-Vsuck(b-a)/nu)) - nu/((b-a) Vsuck) -> 1/2.");
+
+            Real c = (Ubulk - ua - ub_ua * k) / (H * (0.5 - k));
+            for (int i = 0; i < Ny; i++) {
+                Real y_a = y[i] - a;
+                u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
+                       c * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+            }
         }
+        u.makeSpectral();  // all Vsuck != 0 cases
     }
     return u;
 }
