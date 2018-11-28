@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
         const int Ny = 65;
         const int Ntests = 1000;
-        const Real Hmin = 0.10;     // minimum wall separation
+        const Real Hmin = 1.0;      // minimum wall separation
         const Real Hmax = 10.0;     // maximum wall separation
         const Real Rmin = 100.0;    // minimum Reynolds number
         const Real Rmax = 10000.0;  // maximum Reynolds number
