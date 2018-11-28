@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
         Rzsearch = searchflags.zrelative;
         Tsearch = searchflags.solntype == PeriodicOrbit ? true : false;
 
-        const bool Tnormalize = Tsearch ? false : true;
+        const bool Tnormalize = (Tsearch || searchflags.laurette) ? false : true;
 
         /** Read in remaining arguments */
 
