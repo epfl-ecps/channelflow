@@ -25,12 +25,10 @@ int main(int argc, char* argv[]) {
     Real maxerr = 1e-10;
     bool passtest = true;
     int taskid = 0;
-
-    CfMPI* cfmpi = NULL;
-
     srand48(18947);
 
 #ifdef HAVE_MPI
+    CfMPI* cfmpi = NULL;
     cfMPI_Init(&argc, &argv);
     {
         cfmpi = &CfMPI::getInstance();
