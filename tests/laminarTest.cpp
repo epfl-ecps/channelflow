@@ -147,8 +147,8 @@ int main(int argc, char* argv[]) {
             cerr << "\t** FAIL **" << endl;
             cout << "\t** FAIL **" << endl;
         }
-    }
 #ifdef HAVE_MPI
+    }
     cfMPI_Finalize();
 #endif
     return (passtest == true) ? 0 : 1;
