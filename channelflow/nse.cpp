@@ -811,7 +811,7 @@ Real viscosity(Real Reynolds, VelocityScale vscale, MeanConstraint constraint, R
 
 // logic
 //
-// Vsuck == 0
+// Vsuck == 0 or very small
 //   pressure constraint         =>   regular PCF/PPF formula, pressure style
 //   bulk velocity constraint    =>   regular PCF/PPF formula, bulk vel style
 // Vsuck != 0
@@ -823,8 +823,17 @@ Real viscosity(Real Reynolds, VelocityScale vscale, MeanConstraint constraint, R
 ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ubulk, Real Vsuck, Real a, Real b,
                           Real ua, Real ub, int Ny) {
     ChebyCoeff u(Ny, a, b, Spectral);
+    Real H = b - a;
 
-    if (Vsuck == 0.0) {
+    // The laminar solution boundary value problem has two distinct solutions,
+    // For Vsuck == 0, we get the quadratic plane Couette / plane Poiseuille solution.
+    // For Vsuck != 0, we get an exponential solution for ASBL (dPdx == 0), and
+    //                 and an exponential plus quadratic solution for ASBL with dPdx != 0.
+    // The Vsuck != 0 solution converges onto the Vsuck == 0 as Vsuck H/nu -> 0.
+    // PCF/PPF == pane Couette flow/plane Poiseuille flow, ASBL == asympotic suction boundary layer
+
+    // Vsuck == 0 or very small. (PCF/PPF or ASBL in limit Vsuck nu/H -> 0).
+    if (abs(Vsuck * H / nu) < 1e-08) {
         if (constraint == BulkVelocity) {
             u[0] = 0.125 * (ub + ua) + 0.75 * Ubulk;
             u[1] = 0.5 * (ub - ua);
@@ -835,41 +844,31 @@ ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ub
             u[1] = 0.5 * (ub - ua);
             u[2] = 0.25 * dPdx / nu;
         }
-    } else {  // Vsuck != 0
+    } else {  // Vsuck != 0 and away from limit Vsuck nu/H -> 0. ASBL or ASBL plus quadratic
         u.setState(Physical);
         Vector y = chebypoints(Ny, a, b);
-        Real H = b - a;
         Real ub_ua = ub - ua;
         Real Vsuck_nu = Vsuck / nu;
         Real expm1_H_Vsuck_nu = expm1(-H * Vsuck_nu);  // = exp(-H*Vsuck/nu) - 1
 
         if (constraint == PressureGradient) {
+	    // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
+	    // Note that this evaluates to the classic ASBL formula when dPdx == 0.
             Real dPdx_Vsuck = dPdx / Vsuck;
-
-            if (dPdx == 0.0) {
-                // Vsuck !=0, dPdx == 0, regular ASBL formula
-                for (int i = 0; i < Ny; i++) {
-                    u[i] = ua + ub_ua * expm1(-(y[i] - a) * Vsuck_nu) / expm1_H_Vsuck_nu;
-                }
-            } else {
-                // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
-                // This formula would evaluate to above dPdx == 0 formula in the case dPdx == 0,
-                // but I think it's clarifying to have both written out explicitly.
-                for (int i = 0; i < Ny; i++) {
-                    Real y_a = y[i] - a;
-                    u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
-                           dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
-                }
-            }
+	    for (int i = 0; i < Ny; i++) {
+		Real y_a = y[i] - a;
+		u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
+		       dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+	    }
         } else {
             // Vsuck != 0, bulk velocity constraint, following jfg 2018-11-19 notes
+            // Note that in the limit Vsuck H/nu -> 0, k = 1/2 * 1/(1 - Vsuck H/nu)
+            // So k is bounded away from 1/2 by enclosing conditional abs(Vsuck*H/nu) > 1e-08.
+            // Potential cancellation errors in the numerator of u[i] are similarly bounded to
+            // single precision by this condition.
             Real k = -1.0 / expm1_H_Vsuck_nu - nu / (H * Vsuck);
-            if (abs(k - 0.5) < 1.0e-08)
-                cferror(
-                    "laminarProfile : we need an asymptotic formula for ASBL with bulk velocity\n"
-                    "constraint for the case 1/exp(-Vsuck(b-a)/nu)) - nu/((b-a) Vsuck) -> 1/2.");
+            Real c = (Ubulk - ua - ub_ua * k) / (H * (0.5 - k));  // k is bounded away from 1/2
 
-            Real c = (Ubulk - ua - ub_ua * k) / (H * (0.5 - k));
             for (int i = 0; i < Ny; i++) {
                 Real y_a = y[i] - a;
                 u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
