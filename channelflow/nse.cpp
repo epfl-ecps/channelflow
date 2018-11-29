@@ -852,14 +852,14 @@ ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ub
         Real expm1_H_Vsuck_nu = expm1(-H * Vsuck_nu);  // = exp(-H*Vsuck/nu) - 1
 
         if (constraint == PressureGradient) {
-	    // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
-	    // Note that this evaluates to the classic ASBL formula when dPdx == 0.
+            // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
+            // Note that this evaluates to the classic ASBL formula when dPdx == 0.
             Real dPdx_Vsuck = dPdx / Vsuck;
-	    for (int i = 0; i < Ny; i++) {
-		Real y_a = y[i] - a;
-		u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
-		       dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
-	    }
+            for (int i = 0; i < Ny; i++) {
+                Real y_a = y[i] - a;
+                u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
+                       dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+            }
         } else {
             // Vsuck != 0, bulk velocity constraint, following jfg 2018-11-19 notes
             // Note that in the limit Vsuck H/nu -> 0, k = 1/2 * 1/(1 - Vsuck H/nu)
