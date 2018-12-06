@@ -13,6 +13,7 @@ endif()
 set(
     test_APPS
     chebyTest
+    laminarTest
     dnsOrrsommTest
     dnsParabolaTest
     dnsSinusoidTest
@@ -56,6 +57,7 @@ endif()
 
 add_serial_test(tridiag tridiagTest)
 add_serial_test(cheby chebyTest)
+add_serial_test(laminar laminarTest)
 add_serial_test(helmholtz helmholtzTest)
 add_serial_test(tausolver tausolverTest)
 add_serial_test(poisson poissonTest)
@@ -180,6 +182,7 @@ add_serial_test(timeIntegration timeIntegrationTest)
 if (USE_MPI)
     add_mpi_test(mpi_tridiag tridiagTest)
     add_mpi_test(mpi_cheby chebyTest)
+    add_mpi_test(mpi_laminar laminarTest)
     add_mpi_test(mpi_helmholtz helmholtzTest)
     add_mpi_test(mpi_tausolver tausolverTest)
     add_mpi_test(mpi_poisson poissonTest)
