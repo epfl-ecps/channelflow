@@ -207,6 +207,37 @@ if (WITH_PYTHON)
     add_subdirectory(python-wrapper/tests)
 endif()
 
+################################################################
+# Doxygen
+################################################################
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    set(DOXYGEN_GENERATE_LATEX NO)
+    set(DOXYGEN_RECURSIVE YES)
+    set(DOXYGGEN_EXTRACT_ALL YES)
+    set(DOXYGEN_WARNINGS YES)
+    set(DOXYGEN_WARN_NO_PARAMDOC YES)
+    set(DOXYGEN_WARN_IF_DOC_ERROR YES)
+    set(DOXYGEN_WARN_IF_UNDOCUMENTED YES)
+    set(DOXYGEN_GENERATE_TREEVIEW YES)
+    set(DOXYGEN_GENERATE_HTML YES)
+    set(DOXYGEN_GENERATE_MAN NO)
+    set(DOXYGEN_HAVE_DOT YES)
+    set(DOXYGEN_CALL_GRAPH YES)
+    set(DOXYGEN_CALLER_GRAPH YES)
+    set(DOXYGEN_FULL_PATH_NAMES YES)
+    set(DOXYGEN_EXCLUDE_PATTERNS "${CMAKE_SOURCE_DIR}/bundled/*" "${CMAKE_SOURCE_DIR}/cmake/*" "${CMAKE_SOURCE_DIR}/share/*")
+    
+    # to set other options, read: https://cmake.org/cmake/help/v3.9/module/FindDoxygen.html
+    doxygen_add_docs(
+        doxygen
+        ${PROJECT_SOURCE_DIR}
+        COMMENT "Generate html pages"
+    )
+    add_custom_target(doc DEPENDS doxygen)
+endif(DOXYGEN_FOUND)
+
 
 ######## Summary ########
 message("\n")
