@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
         const int Nx = (Nxarg == 0 ? u0.Nx() : Nxarg);
         const int Ny = (Nyarg == 0 ? u0.Ny() : Nyarg);
         const int Nz = (Nzarg == 0 ? u0.Nz() : Nzarg);
-        const Real a = (isnan(aarg) ? u0.a() : aarg);
-        const Real b = (isnan(barg) ? u0.b() : barg);
+        const Real a = (std::isnan(aarg) ? u0.a() : aarg);
+        const Real b = (std::isnan(barg) ? u0.b() : barg);
 
         FlowField u1(Nx, Ny, Nz, u0.Nd(), u0.Lx(), u0.Lz(), u0.a(), u0.b(), cfmpi);
         u1.interpolate(u0);
