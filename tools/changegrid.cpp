@@ -25,8 +25,8 @@ int main(int argc, char* argv[]) {
         const int Nxarg = args.getint("-Nx", "--Nx", 0, "new # x gridpoints [default==no change]");
         const int Nyarg = args.getint("-Ny", "--Ny", 0, "new # y gridpoints [default==no change]");
         const int Nzarg = args.getint("-Nz", "--Nz", 0, "new # z gridpoints [default==no change]");
-        const Real aarg = args.getreal("-a", "--a", 0.0, "new lower wall position [default==no change]");
-        const Real barg = args.getreal("-b", "--b", 0.0, "new upper wall position [default==no change]");
+        const Real aarg = args.getreal("-a", "--a", NAN, "new lower wall position [default==no change]");
+        const Real barg = args.getreal("-b", "--b", NAN, "new upper wall position [default==no change]");
         const Real alpha = args.getreal("-al", "--alpha", 0.0, "new alpha == 2pi/Lx");
         const Real gamma = args.getreal("-ga", "--gamma", 0.0, "new gamma == 2pi/Lz");
         const Real lx = (alpha == 0) ? args.getreal("-lx", "--lx", 0.0, "new Lx = 2 pi lx") : 1.0 / alpha;
@@ -49,8 +49,8 @@ int main(int argc, char* argv[]) {
         const int Nx = (Nxarg == 0 ? u0.Nx() : Nxarg);
         const int Ny = (Nyarg == 0 ? u0.Ny() : Nyarg);
         const int Nz = (Nzarg == 0 ? u0.Nz() : Nzarg);
-        const Real a = (aarg == 0 ? u0.a() : aarg);
-        const Real b = (barg == 0 ? u0.b() : barg);
+        const Real a = (isnan(aarg) ? u0.a() : aarg);
+        const Real b = (isnan(barg) ? u0.b() : barg);
 
         FlowField u1(Nx, Ny, Nz, u0.Nd(), u0.Lx(), u0.Lz(), u0.a(), u0.b(), cfmpi);
         u1.interpolate(u0);
