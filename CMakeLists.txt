@@ -5,7 +5,7 @@
 #  Include and configure this version of channelflow.
 #
 cmake_minimum_required(VERSION 3.1)
-
+cmake_policy(SET CMP0057 NEW)
 project(chflow)
 
 ######## Channelflow version ########
