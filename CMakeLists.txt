@@ -188,6 +188,7 @@ endif ()
 add_subdirectory(channelflow)
 add_subdirectory(programs)
 add_subdirectory(tools)
+add_subdirectory(examples)
 
 # Check if we want to build the python wrapper and have boost-python
 # If Python and boost.python are there, build python interface

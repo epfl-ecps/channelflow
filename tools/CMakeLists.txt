@@ -6,6 +6,7 @@
 #
 set(tool_APPS
   addfields
+  benchmark
   changegrid
   diffop
   extrapolatefields
