@@ -2735,8 +2735,8 @@ void FlowField::hdf5Save(const string& filebase) const {
     // transfer to nopadded grid and save that
     int Nx, Nz;
     if (this->padded()) {
-        Nx = (2 * Nx_) / 3;
-        Nz = (2 * Nz_) / 3;
+        Nx = 2 * (Nx_ / 3);
+        Nz = 2 * (Nz_ / 3);
 
     } else {
         Nx = Nx_;
