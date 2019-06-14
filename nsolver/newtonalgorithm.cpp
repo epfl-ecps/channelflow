@@ -561,10 +561,10 @@ VectorXd NewtonAlgorithm::solve(DSI& dsiG, const VectorXd& y0, Real& gx) {
             *os << "Final residual of solver is " << solverResidual << endl;
 
         } else if (searchflags.solver == SolverBiCGStab) {
-	    //lambda function to get the current jacobian*vector, is passed to bicgstab object below.
+            // lambda function to get the current jacobian*vector, is passed to bicgstab object below.
             Rn2Rnfunc A = [this, &x, &Gx, epsDx, centdiff, Nunk, Northog, E, taskid, uunk](const VectorXd& v) {
-		VectorXd Lq = jacobianWithAC(x, v, Gx, epsDx, centdiff, fcount_newton_);
-		
+                VectorXd Lq = jacobianWithAC(x, v, Gx, epsDx, centdiff, fcount_newton_);
+
                 // Enforce orthogonality conditions
                 // i.e. for e.g. xrel: Lq(xunk) = dG/dx dot q
                 VectorXd e(Nunk);
@@ -576,8 +576,8 @@ VectorXd NewtonAlgorithm::solve(DSI& dsiG, const VectorXd& y0, Real& gx) {
                         Lq(uunk + i) = res;
                     }
                 }
-                
-		return Lq;
+
+                return Lq;
             };
 
             // iteratively solve the system with Bi-conjucate gradient stabilized method
