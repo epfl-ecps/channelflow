@@ -561,16 +561,27 @@ VectorXd NewtonAlgorithm::solve(DSI& dsiG, const VectorXd& y0, Real& gx) {
             *os << "Final residual of solver is " << solverResidual << endl;
 
         } else if (searchflags.solver == SolverBiCGStab) {
-            Real epsJ = epsDx;
-            bool cd = centdiff;
-            int fcount_tmp = fcount_newton_;
-            Rn2Rnfunc A = [&dsiG, &x, &Gx, epsJ, cd](const VectorXd& v) {
-                int fcount = 0;
-                return dsiG.Jacobian(x, v, Gx, epsJ, cd, fcount);
+	    //lambda function to get the current jacobian*vector, is passed to bicgstab object below.
+            Rn2Rnfunc A = [this, &x, &Gx, epsDx, centdiff, Nunk, Northog, E, taskid, uunk](const VectorXd& v) {
+		VectorXd Lq = jacobianWithAC(x, v, Gx, epsDx, centdiff, fcount_newton_);
+		
+                // Enforce orthogonality conditions
+                // i.e. for e.g. xrel: Lq(xunk) = dG/dx dot q
+                VectorXd e(Nunk);
+                int tph = (msDSI_->tph()) ? 1 : 0;
+                for (int i = tph; i < Northog; ++i) {
+                    e = E.col(i);
+                    Real res = L2IP(v, e);  // L2IP(Lq,e)
+                    if (taskid == 0) {
+                        Lq(uunk + i) = res;
+                    }
+                }
+                
+		return Lq;
             };
 
             // iteratively solve the system with Bi-conjucate gradient stabilized method
-            BiCGStabL<VectorXd> bicgstab(A, Gx, searchflags.lBiCGStab, NSolver);
+            nsolver::BiCGStabL<VectorXd> bicgstab(A, Gx, searchflags.lBiCGStab, NSolver);
             int nSolver;
             for (nSolver = 0; nSolver < NSolver; nSolver++) {
                 *os << "Newt,BiCGStab(" << bicgstab.l() << ") step: " << nNewton << "," << nSolver << " ";
@@ -583,7 +594,6 @@ VectorXd NewtonAlgorithm::solve(DSI& dsiG, const VectorXd& y0, Real& gx) {
             }
             *os << "Took " << nSolver << " BiCGstab steps, final residual is " << bicgstab.residual() << endl;
             dxN = -bicgstab.solution();
-            fcount_newton_ = fcount_tmp;
 
         } else if (searchflags.solver == SolverGMRES) {
             // iteratively solve with GMRES
