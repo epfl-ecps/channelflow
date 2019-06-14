@@ -581,7 +581,7 @@ VectorXd NewtonAlgorithm::solve(DSI& dsiG, const VectorXd& y0, Real& gx) {
             };
 
             // iteratively solve the system with Bi-conjucate gradient stabilized method
-            nsolver::BiCGStabL<VectorXd> bicgstab(A, Gx, searchflags.lBiCGStab, NSolver);
+            BiCGStabL<VectorXd> bicgstab(A, Gx, searchflags.lBiCGStab, NSolver);
             int nSolver;
             for (nSolver = 0; nSolver < NSolver; nSolver++) {
                 *os << "Newt,BiCGStab(" << bicgstab.l() << ") step: " << nNewton << "," << nSolver << " ";
