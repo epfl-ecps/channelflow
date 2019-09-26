@@ -16,6 +16,7 @@ jobs:
   include:
     - stage: 'Style and code guidelines'
       os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -51,6 +52,7 @@ jobs:
       script: ./share/qa/unit_and_integration_test.sh
 
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
@@ -145,6 +147,7 @@ jobs:
       script: ./share/qa/build_test.sh
 
     - os: linux
+      dist: trusty
       addons:
         apt:
           sources:
