@@ -9,7 +9,6 @@
 #include "channelflow/diffops.h"
 #include "channelflow/flowfield.h"
 #include "channelflow/symmetry.h"
-#include "modules/viscoelastic/veutils.h"
 
 using namespace std;
 using namespace boost::python;
