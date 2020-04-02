@@ -5,7 +5,7 @@
 #  Include and configure this version of channelflow.
 #
 cmake_minimum_required(VERSION 3.1)
-
+cmake_policy(SET CMP0057 NEW)
 project(chflow)
 
 ######## Channelflow version ########
@@ -188,6 +188,7 @@ endif ()
 add_subdirectory(channelflow)
 add_subdirectory(programs)
 add_subdirectory(tools)
+add_subdirectory(examples)
 
 # Check if we want to build the python wrapper and have boost-python
 # If Python and boost.python are there, build python interface
