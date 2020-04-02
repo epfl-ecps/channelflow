@@ -826,14 +826,15 @@ ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ub
     Real H = b - a;
 
     // The laminar solution boundary value problem has two distinct solutions,
-    // For Vsuck == 0, we get the quadratic plane Couette / plane Poiseuille solution.
-    // For Vsuck != 0, we get an exponential solution for ASBL (dPdx == 0), and
-    //                 and an exponential plus quadratic solution for ASBL with dPdx != 0.
-    // The Vsuck != 0 solution converges onto the Vsuck == 0 as Vsuck H/nu -> 0.
-    // PCF/PPF == pane Couette flow/plane Poiseuille flow, ASBL == asympotic suction boundary layer
+    // For Vsuck == 0, we get the quadratic PCF/PPF solutions.
+    // For Vsuck != 0, we get an exponential ASBL solution
+    // For Vsuck != 0, but as H Vsuck/nu -> 0, we evaluate the exponential ASBL solution
+    // with a Taylor expansion in mu = Vsuck H/nu in order to avoid loss of precision.
 
-    // Vsuck == 0 or very small. (PCF/PPF or ASBL in limit Vsuck nu/H -> 0).
-    if (abs(Vsuck * H / nu) < 1e-08) {
+    // PCF/PPF == plane Couette flow/plane Poiseuille flow, ASBL == asympotic suction boundary layer
+
+    Real mu = Vsuck * H / nu;
+    if (abs(mu) == 0.0) {  // PPF/PCF solution
         if (constraint == BulkVelocity) {
             u[0] = 0.125 * (ub + ua) + 0.75 * Ubulk;
             u[1] = 0.5 * (ub - ua);
@@ -844,35 +845,96 @@ ChebyCoeff laminarProfile(Real nu, MeanConstraint constraint, Real dPdx, Real Ub
             u[1] = 0.5 * (ub - ua);
             u[2] = 0.25 * dPdx / nu;
         }
-    } else {  // Vsuck != 0 and away from limit Vsuck nu/H -> 0. ASBL or ASBL plus quadratic
+    } else {  // ASBL solutions, Vsuck != 0
         u.setState(Physical);
-        Vector y = chebypoints(Ny, a, b);
+        Real H = b - a;
+        Real mu = H * Vsuck / nu;  // dimensionless constant representing magnitude of Vsuck
         Real ub_ua = ub - ua;
-        Real Vsuck_nu = Vsuck / nu;
-        Real expm1_H_Vsuck_nu = expm1(-H * Vsuck_nu);  // = exp(-H*Vsuck/nu) - 1
+        Real expm1_mu = expm1(-mu);
+        Real dPdx_HH_nu = dPdx * square(H) / nu;
+        Vector y = chebypoints(Ny, a, b);
 
-        if (constraint == PressureGradient) {
-            // Vsuck != 0, dPdx != 0, following jfg 2018-11-19 notes
-            // Note that this evaluates to the classic ASBL formula when dPdx == 0.
-            Real dPdx_Vsuck = dPdx / Vsuck;
+        if (abs(mu) > 1e-01) {
+            // ========= direct evaluation of pressure-ASBL formula============
+
+            if (constraint == BulkVelocity) {
+                // Match the bulk velocity  constraint by computing the pressure gradient
+                // that produces the correct bulk velocity, and then assigning u[i] with
+                // the pressure gradient formula below.
+                Real k = -1.0 / expm1_mu - 1 / mu;  // k is bounded away from 1/2, safe for below
+                dPdx_HH_nu = mu * (Ubulk - ua - ub_ua * k) / (0.5 - k);
+            }
+
             for (int i = 0; i < Ny; i++) {
-                Real y_a = y[i] - a;
-                u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
-                       dPdx_Vsuck * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+                Real yhat = (y[i] - a) / H;
+                Real expm1_mu_yhat = expm1(-mu * yhat);
+
+                u[i] = ua + (ub_ua)*expm1_mu_yhat / expm1_mu + dPdx_HH_nu * (yhat - expm1_mu_yhat / expm1_mu) / mu;
             }
         } else {
-            // Vsuck != 0, bulk velocity constraint, following jfg 2018-11-19 notes
-            // Note that in the limit Vsuck H/nu -> 0, k = 1/2 * 1/(1 - Vsuck H/nu)
-            // So k is bounded away from 1/2 by enclosing conditional abs(Vsuck*H/nu) > 1e-08.
-            // Potential cancellation errors in the numerator of u[i] are similarly bounded to
-            // single precision by this condition.
-            Real k = -1.0 / expm1_H_Vsuck_nu - nu / (H * Vsuck);
-            Real c = (Ubulk - ua - ub_ua * k) / (H * (0.5 - k));  // k is bounded away from 1/2
+            // ========= use Taylor expansions for pressure-ASBL formulae ============
+
+            // The direct evaluation formula in the above code block become numerically
+            // unstable in the limit H Vsuck/nu -> 0. So for small mu = H Vsuck/nu,
+            // we use small-mu Taylor expansions for these formula. The Taylor expansions
+            // are computed symbolically pressure-asbl-laminar-taylor-expansion.jl (or .ipynb)
+            // included in the channelflow distribution. gibson 2020-04-02.
+
+            if (constraint == BulkVelocity) {
+                // Match the bulk velocity  constraint by computing the pressure gradient
+                // that produces the correct bulk velocity, and then assigning u[i] with
+                // the pressure gradient formula below.
+                // This is the Taylor expansion in mu of the formula for dPdx_HH_nu in the
+                // "direct evaluation" exponential formula above
+
+                Real mu2 = mu * mu;
+                Real A = ub - ua;
+                Real B = ua + ub - 2 * Ubulk;
+
+                dPdx_HH_nu = 6 * B + mu * (A + mu * (B / 10 + mu2 * (-B / 1400 + mu2 * B / 126000)));
+            }
+
+            Real one_2 = 1.0 / 2;
+            Real one_12 = 1.0 / 12;
+            Real one_24 = 1.0 / 24;
+            Real one_720 = 1.0 / 720;
+            Real one_1440 = 1.0 / 1440;
+            Real one_30240 = 1.0 / 30240;
+            Real one_120960 = 1.0 / 120960;
 
             for (int i = 0; i < Ny; i++) {
-                Real y_a = y[i] - a;
-                u[i] = ua + ub_ua * expm1(-y_a * Vsuck_nu) / expm1_H_Vsuck_nu +
-                       c * (y_a * expm1_H_Vsuck_nu - H * expm1(-y_a * Vsuck_nu)) / expm1(-H * Vsuck_nu);
+                Real yh = (y[i] - a) / H;  // yh stands for yhat = (y - a)/(b-a), yh in [0,1]
+                Real yh2 = yh * yh;
+                Real yh3 = yh2 * yh;
+                Real yh4 = yh3 * yh;
+                Real yh_1 = yh - 1;
+
+                // Note: We're relying on compiler to hoist some constant terms out of the loop,
+                // but it won't really matter if this doesn't happen. This code should be executed
+                // once prior to time-stepping.
+
+                // Taylor expansion in mu of expm1_mu_yh / expm1_mu.
+                Real taylor1 =
+                    yh + mu * (-one_2 * yh * yh_1 +
+                               mu * (one_12 * yh * yh_1 * (2 * yh - 1) +
+                                     mu * (-one_24 * square(yh * yh_1) +
+                                           mu * (one_720 * yh * yh_1 * (2 * yh - 1) * (3 * yh2 - 3 * yh - 1) +
+                                                 mu * (-one_1440 * square(yh * yh_1) * (2 * yh2 - 2 * yh - 1) +
+                                                       mu * (one_30240 * yh * yh_1 * (2 * yh - 1) *
+                                                             (3 * yh4 - 6 * yh3 + 3 * yh + 1)))))));
+
+                // Taylor expansion of 1/mu * (yh - expm1_mu_yh / expm1_mu);
+                Real taylor2 =
+                    one_2 * yh * yh_1 + mu * (-one_12 * yh * yh_1 * (2 * yh - 1) +
+                                              mu * (one_24 * square(yh * yh_1) +
+                                                    mu * (-one_720 * yh * yh_1 * (2 * yh - 1) * (3 * yh2 - 3 * yh - 1) +
+                                                          mu * (one_1440 * square(yh * yh_1) * (2 * yh2 - 2 * yh - 1) +
+                                                                mu * (-one_30240 * yh * yh_1 * (2 * yh - 1) *
+                                                                          (3 * yh4 - 6 * yh3 + 3 * yh + 1) +
+                                                                      mu * (one_120960 * square(yh * yh_1) *
+                                                                            (3 * yh4 - 6 * yh3 + 4 * yh + 2)))))));
+
+                u[i] = ua + ub_ua * taylor1 + dPdx_HH_nu * taylor2;
             }
         }
         u.makeSpectral();  // all Vsuck != 0 cases
