@@ -74,8 +74,9 @@ class ILC : public DNS {
     std::shared_ptr<OBE> init_obe_;
 
     std::shared_ptr<OBE> newOBE(const std::vector<FlowField>& fields, const ILCFlags& flags);
-    std::shared_ptr<OBE> newOBE(const std::vector<FlowField>& fields, const std::vector<ChebyCoeff>& base, const ILCFlags& flags);
+    std::shared_ptr<OBE> newOBE(const std::vector<FlowField>& fields, const std::vector<ChebyCoeff>& base,
+                                const ILCFlags& flags);
 };
 
-}  // namespace channelflow
+}  // namespace chflow
 #endif  // ILC_H

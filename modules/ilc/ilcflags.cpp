@@ -63,9 +63,9 @@ ILCFlags::ILCFlags(ArgList& args, const bool laurette) {
 
     // also needed for ILC but better show at the end
     const std::string tsymmstr = args.getstr("-tsymms", "--tempsymmetries", "",
-                                        "constrain temp(t) to invariant "
-                                        "symmetric subspace, argument is the filename for a file "
-                                        "listing the generators of the isotropy group");
+                                             "constrain temp(t) to invariant "
+                                             "symmetric subspace, argument is the filename for a file "
+                                             "listing the generators of the isotropy group");
     const Real ystats_ = args.getreal("-ys", "--ystats", 0, "y-coordinate of height dependent statistics, e.g. Nu(y)");
 
     // set flags
@@ -137,4 +137,4 @@ void ILCFlags::load(int taskid, const std::string indir) {
     ystats = getRealfromLine(taskid, is);
 }
 
-}  // namespace channelflow
+}  // namespace chflow

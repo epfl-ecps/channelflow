@@ -807,4 +807,4 @@ ChebyCoeff hydrostaticPressureGradientY(ChebyCoeff Tbase, ILCFlags flags) {
     return Py;
 }
 
-}  // namespace channelflow
+}  // namespace chflow

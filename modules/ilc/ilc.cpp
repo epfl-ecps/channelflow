@@ -7,7 +7,6 @@
 
 #include "modules/ilc/ilc.h"
 
-
 namespace chflow {
 
 int field2vector_size(const FlowField& u, const FlowField& temp) {
@@ -241,8 +240,8 @@ ILC::ILC(const std::vector<FlowField>& fields, const ILCFlags& flags)
         // Safety check
         if (init_algorithm_->Ninitsteps() != 0)
             std::cerr << "DNS::DNS(fields, flags) :\n"
-                 << flags.initstepping << " can't initialize " << flags.timestepping
-                 << " since it needs initialization itself.\n";
+                      << flags.initstepping << " can't initialize " << flags.timestepping
+                      << " since it needs initialization itself.\n";
     }
 }
 
@@ -289,9 +288,10 @@ std::shared_ptr<OBE> ILC::newOBE(const std::vector<FlowField>& fields, const ILC
     return obe;
 }
 
-std::shared_ptr<OBE> ILC::newOBE(const std::vector<FlowField>& fields, const std::vector<ChebyCoeff>& base, const ILCFlags& flags) {
+std::shared_ptr<OBE> ILC::newOBE(const std::vector<FlowField>& fields, const std::vector<ChebyCoeff>& base,
+                                 const ILCFlags& flags) {
     std::shared_ptr<OBE> obe(new OBE(fields, base, flags));
     return obe;
 }
 
-}  // namespace channelflow
+}  // namespace chflow
