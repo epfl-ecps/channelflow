@@ -9,6 +9,7 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}/ilcflags.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/obe.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ilc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ilcdsi.cpp
 )
 
 set(
@@ -16,6 +17,7 @@ set(
     ${CMAKE_CURRENT_SOURCE_DIR}/ilcflags.h
     ${CMAKE_CURRENT_SOURCE_DIR}/obe.h
     ${CMAKE_CURRENT_SOURCE_DIR}/ilc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ilcdsi.h
 )
 
 # Define the target with appropriate dependencies
