@@ -1,11 +1,11 @@
 /**
- * System class of Oberbeck-Boussinesq equations for standard channel flows
- *
- * This file is a part of channelflow version 2.0.
- * License is GNU GPL version 2 or later: https://channelflow.org/license
- *
- * Original author: Florian Reetz
- */
+* System class of Oberbeck-Boussinesq equations for standard channel flows
+*
+* This file is a part of channelflow version 2.0, https://channelflow.ch .
+* License is GNU GPL version 2 or later: ./LICENSE
+*
+* Original author: Florian Reetz
+*/
 
 #ifndef OBE_H
 #define OBE_H
