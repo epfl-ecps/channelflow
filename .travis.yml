@@ -10,6 +10,7 @@ cache: ccache
 branches:
   only:
     - master
+    - patch_2020
 
 jobs:
   fast_finish: true
