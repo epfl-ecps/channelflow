@@ -22,6 +22,7 @@ OPTION(USE_MPI "use mpi, if found" ON) # use -DUSE_MPI=off to force disable use 
 OPTION(BUILD_SHARED_LIBS "Builds shared libraries if ON, static libraries if OFF" ON)
 OPTION(SET_RPATH "set the rpath of the executable to the found libraries" ON)
 OPTION(WITH_NSOLVER "compile support for the nsolver module" ON)
+OPTION(WITH_ILC "compile programs for inclined layer convection" OFF)
 OPTION(WITH_PYTHON "build a python wrapper, using boost-python" OFF)
 OPTION(WITH_HDF5CXX "enable legacy file format using hdf5 cxx" OFF)
 OPTION(WITH_GTEST "enable gtest unit testing" ON)
@@ -190,6 +191,13 @@ add_subdirectory(programs)
 add_subdirectory(tools)
 add_subdirectory(examples)
 
+if (WITH_ILC)
+    if (NOT WITH_NSOLVER)
+        message(FATAL_ERROR "Compiling the ILC module requires -DWITH_NSOLVER=ON")
+    endif()
+    add_subdirectory(modules/ilc)
+endif ()
+
 # Check if we want to build the python wrapper and have boost-python
 # If Python and boost.python are there, build python interface
 if (WITH_PYTHON)
@@ -290,6 +298,12 @@ if (WITH_NSOLVER)
     message("   nsolver:                        enabled")
 else ()
     message("   nsolver:                        disabled")
+endif ()
+
+if (WITH_ILC)
+    message("   Inclined layer convection:      enabled")
+else ()
+    message("   Inclined layer convection:      disabled")
 endif ()
 
 if (WITH_PYTHON)
