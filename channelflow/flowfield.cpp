@@ -3333,7 +3333,7 @@ void FlowField::writeNetCDF(const string& filebase, vector<string> component_nam
             char cf_conv[] = "CF-1.0";
             char title[] = "FlowField";
             auto fversion = i2s(format_version);
-            char reference[] = "Channelflow is free software: www.channelflow.org.";
+            char reference[] = "Channelflow is free software: www.channelflow.ch.";
             time_t rawtime;  // current time
             struct tm* timeinfo;
             char tbuffer[80];
