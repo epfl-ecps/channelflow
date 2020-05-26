@@ -220,4 +220,3 @@ string printdiagnostics(FlowField& u, const DNS& dns, Real t, const TimeStep& dt
     sout << "         CFL == " << cfl << endl;
     return sout.str();
 }
-
