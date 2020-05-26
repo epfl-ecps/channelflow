@@ -2,6 +2,7 @@
  * This file is a part of channelflow version 2.0, https://channelflow.ch .
  * License is GNU GPL version 2 or later: ./LICENSE
  */
+#include <sys/time.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -28,6 +29,7 @@ int main(int argc, char* argv[]) {
         const int Nx = args.getint("-Nx", "--Nx", "# x gridpoints");
         const int Ny = args.getint("-Ny", "--Ny", "# y gridpoints");
         const int Nz = args.getint("-Nz", "--Nz", "# z gridpoints");
+        const int Nd = args.getint("-Nd", "--Nd", 3, "# of field dimensions");
         const Real alpha = args.getreal("-a", "--alpha", 0, "Lx = 2 pi/alpha");
         const Real gamma = args.getreal("-g", "--gamma", 0, "Lz = 2 pi/gamma");
         const Real lx = (alpha == 0.0) ? args.getreal("-lx", "--lx", 0.0, "Lx = 2 pi lx") : 1 / alpha;
@@ -36,20 +38,29 @@ int main(int argc, char* argv[]) {
         const Real Lz = (lz == 0.0) ? args.getreal("-Lz", "--Lz", "spanwise   (z) box length") : 2 * pi * lz;
         const Real ymin = args.getreal("-ymin", "--ymin", -1, "lower wall height (y is wallnormal) ");
         const Real ymax = args.getreal("-ymax", "--ymax", +1, "upper wall height (y is wallnormal) ");
-        const int seed = args.getint("-sd", "--seed", 1, "seed for random number generator");
         const Real smooth = args.getreal("-s", "--smoothness", 0.4, "smoothness of field, 0 < s < 1");
         const Real magn = args.getreal("-m", "--magnitude", 0.20, "magnitude  of field, 0 < m < 1");
         const bool meanfl = args.getflag("-mf", "--meanflow", "perturb the mean");
 
         const string symmstr = args.getstr("-symms", "--symmetries", "", "file of symmetries to satisfy");
 
+        int seed =
+            args.getint("-sd", "--seed", 1, "seed for random number generator. If 1, seed = current time in sec");
+
         const string uname = args.getstr(1, "<fieldname>", "output file");
         args.check();
         args.save("./");
 
+        if (seed == 1) {
+            timeval tstamp;
+            gettimeofday(&tstamp, 0);
+            seed = tstamp.tv_sec;
+        }
+
+        cout << "Seed is " << seed << endl;
         srand48(seed);
 
-        FlowField u(Nx, Ny, Nz, 3, Lx, Lz, ymin, ymax);
+        FlowField u(Nx, Ny, Nz, Nd, Lx, Lz, ymin, ymax);
         u.addPerturbations(u.kxmaxDealiased(), u.kzmaxDealiased(), 1.0, 1 - smooth, meanfl);
 
         SymmetryList s;
