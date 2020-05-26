@@ -197,6 +197,7 @@ if (WITH_ILC)
     endif()
     add_subdirectory(modules/ilc)
     add_subdirectory(modules/ilc/programs)
+    add_subdirectory(modules/ilc/examples)
 endif ()
 
 # Check if we want to build the python wrapper and have boost-python
