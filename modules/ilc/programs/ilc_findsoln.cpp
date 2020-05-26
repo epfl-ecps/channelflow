@@ -13,7 +13,7 @@
 #include "nsolver/nsolver.h"
 
 using namespace std;
-using namespace channelflow;
+using namespace chflow;
 
 int main(int argc, char* argv[]) {
     cfMPI_Init(&argc, &argv);
@@ -27,10 +27,10 @@ int main(int argc, char* argv[]) {
          * of the algorithm.
          */
 
-        unique_ptr<nsolver::Newton> N;
-        nsolver::NewtonSearchFlags searchflags(args);
+        unique_ptr<Newton> N;
+        NewtonSearchFlags searchflags(args);
         searchflags.save(searchflags.outdir);
-        N = unique_ptr<nsolver::Newton>(new nsolver::NewtonAlgorithm(searchflags));
+        N = unique_ptr<Newton>(new NewtonAlgorithm(searchflags));
 
         ILCFlags ilcflags(args, searchflags.laurette);
         TimeStep dt(ilcflags);
@@ -78,11 +78,11 @@ int main(int argc, char* argv[]) {
         dsi = unique_ptr<ilcDSI>(new ilcDSI(ilcflags, sigma, 0, dt, Tsearch, Rxsearch, Rzsearch, Tnormalize, unormalize,
                                             u, temp, N->getLogstream()));
 
-        VectorXd x_singleShot;
-        VectorXd x;
-        VectorXd yvec;
-        MatrixXd y;
-        nsolver::MultishootingDSI* msDSI = N->getMultishootingDSI();
+        Eigen::VectorXd x_singleShot;
+        Eigen::VectorXd x;
+        Eigen::VectorXd yvec;
+        Eigen::MatrixXd y;
+        MultishootingDSI* msDSI = N->getMultishootingDSI();
         dsi->makeVectorILC(u, temp, sigma, ilcflags.T, x_singleShot);
         msDSI->setDSI(*dsi, x_singleShot.size());
         if (msinit) {

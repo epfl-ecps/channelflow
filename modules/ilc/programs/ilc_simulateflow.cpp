@@ -25,7 +25,7 @@
 #include "modules/ilc/ilcdsi.h"
 
 using namespace std;
-using namespace channelflow;
+using namespace chflow;
 
 string printdiagnostics(FlowField& u, const DNS& dns, Real t, const TimeStep& dt, Real nu, Real umin, bool vardt,
                         bool pl2norm, bool pchnorm, bool pdissip, bool pshear, bool pdiverge, bool pUbulk, bool pubulk,
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
         args.check();
         args.save("./");
-        cfbasics::mkdir(outdir);
+        mkdir(outdir);
         args.save(outdir);
         flags.save(outdir);
 
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
             s = printdiagnostics(fields[0], dns, t, dt, flags.nu, umin, dt.variable(), pl2norm, pchnorm, pdissip,
                                  pshear, pdiverge, pUbulk, pubulk, pdPdx, pcfl);
             if (ecfmin > 0 && Ecf(fields[0]) < ecfmin) {
-                cferror("Ecf < ecfmin == " + cfbasics::r2s(ecfmin) + ", exiting");
+                cferror("Ecf < ecfmin == " + r2s(ecfmin) + ", exiting");
             }
 
             cout << s;
@@ -207,7 +207,7 @@ string printdiagnostics(FlowField& u, const DNS& dns, Real t, const TimeStep& dt
         U.makeSpectral();
         U += Re(u.profile(0, 0, 0));
         Real Ucenter = U.eval(0.5 * (u.a() + u.b()));
-        Real Uwall = cfbasics::pythag(0.5 * (U.eval_b() - U.eval_a()), 0.5 * (W.eval_b() - W.eval_a()));
+        Real Uwall = pythag(0.5 * (U.eval_b() - U.eval_a()), 0.5 * (W.eval_b() - W.eval_a()));
         Real Umean = U.mean();
         sout << "        1/nu == " << 1 / nu << endl;
         sout << "  Uwall h/nu == " << Uwall * h / nu << endl;

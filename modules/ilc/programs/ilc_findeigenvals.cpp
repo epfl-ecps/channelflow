@@ -22,7 +22,7 @@
 #include "nsolver/nsolver.h"
 
 using namespace std;
-using namespace channelflow;
+using namespace chflow;
 
 // This program calculates eigenvalues of fixed point of plane Couette flow
 // using Arnoldi iteration. The ideas and algorithm are based on Divakar
@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
 
         // The Eigenvals class is utilized to solve the eigenvalue problem.
         // This class requires Arnoldi class.
-        unique_ptr<nsolver::Eigenvals> E;
-        nsolver::EigenvalsFlags eigenflags(args);
-        E = unique_ptr<nsolver::Eigenvals>(new nsolver::Eigenvals(eigenflags));
+        unique_ptr<Eigenvals> E;
+        EigenvalsFlags eigenflags(args);
+        E = unique_ptr<Eigenvals>(new Eigenvals(eigenflags));
 
         args.section("Program options");
         const bool poincare =
@@ -158,10 +158,10 @@ int main(int argc, char* argv[]) {
             new ilcDSI(ilcflags, sigma, h, dt, false, false, false, false, 0.0, u, temp, E->getLogstream()));
 
         // Check if sigma f^T(u) - u = 0
-        VectorXd x;
+        Eigen::VectorXd x;
         field2vector(u, temp, x);
 
-        VectorXd Gx = dsi->eval(x);
+        Eigen::VectorXd Gx = dsi->eval(x);
         vector2field(Gx, Gu, Gtemp);
 
         if (taskid == 0)
@@ -262,7 +262,7 @@ int main(int argc, char* argv[]) {
         dtemp *= EPS_du / L2Norm(dtemp);
         printout("L2Norm(dtemp) = " + r2s(L2Norm(dtemp)));
 
-        VectorXd dx;
+        Eigen::VectorXd dx;
         field2vector(du, dtemp, dx);
 
         E->solve(*dsi, x, dx, ilcflags.T, eps);

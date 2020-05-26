@@ -196,6 +196,7 @@ if (WITH_ILC)
         message(FATAL_ERROR "Compiling the ILC module requires -DWITH_NSOLVER=ON")
     endif()
     add_subdirectory(modules/ilc)
+    add_subdirectory(modules/ilc/programs)
 endif ()
 
 # Check if we want to build the python wrapper and have boost-python
