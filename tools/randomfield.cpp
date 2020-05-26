@@ -2,10 +2,10 @@
  * This file is a part of channelflow version 2.0, https://channelflow.ch .
  * License is GNU GPL version 2 or later: ./LICENSE
  */
+#include <sys/time.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sys/time.h>
 #include "channelflow/dns.h"
 #include "channelflow/flowfield.h"
 #include "channelflow/symmetry.h"
@@ -44,13 +44,14 @@ int main(int argc, char* argv[]) {
 
         const string symmstr = args.getstr("-symms", "--symmetries", "", "file of symmetries to satisfy");
 
-        int seed = args.getint("-sd", "--seed", 1, "seed for random number generator. If 1, seed = current time in sec");
+        int seed =
+            args.getint("-sd", "--seed", 1, "seed for random number generator. If 1, seed = current time in sec");
 
         const string uname = args.getstr(1, "<fieldname>", "output file");
         args.check();
         args.save("./");
 
-        if (seed==1) {
+        if (seed == 1) {
             timeval tstamp;
             gettimeofday(&tstamp, 0);
             seed = tstamp.tv_sec;
