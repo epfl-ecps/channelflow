@@ -3313,7 +3313,7 @@ void linearizedNL(const FlowField& u_, const ChebyCoeff& U_, const ChebyCoeff& W
     W.makeSpectral(trans);
     ChebyCoeff Uy, Wy;
     diff(U, Uy);
-    diff(U, Wy);
+    diff(W, Wy);
     U.makePhysical(trans);
     Uy.makePhysical(trans);
     W.makePhysical(trans);
